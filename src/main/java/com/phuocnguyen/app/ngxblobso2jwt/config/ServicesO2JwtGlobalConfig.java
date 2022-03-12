@@ -1,6 +1,7 @@
 package com.phuocnguyen.app.ngxblobso2jwt.config;
 
 import com.ngxsivaos.model.properties.RSSProperties;
+import com.ngxsivaos.model.properties.RSSReCallbackProperties;
 import com.phuocnguyen.app.ngxblobso2jwt.service.NgxAuthRssService;
 import com.phuocnguyen.app.ngxblobso2jwt.service.serviceImpl.NgxAuthRssServiceImpl;
 import com.sivaos.Service.SIVAOSAuthenticationService;
@@ -22,6 +23,12 @@ public class ServicesO2JwtGlobalConfig {
     }
 
     @Bean
+    @Primary
+    public RSSReCallbackProperties rssReCallbackProperties() {
+        return new RSSReCallbackProperties();
+    }
+
+    @Bean
     @Resource(name = "sivaOsAuthenticationService")
     public SIVAOSAuthenticationService sivaOsAuthenticationService() {
         return new SIVAOSAuthenticationServiceImplement();
@@ -31,6 +38,6 @@ public class ServicesO2JwtGlobalConfig {
     @Primary
     @Resource(name = "ngxAuthRssService")
     public NgxAuthRssService ngxAuthRssService() {
-        return new NgxAuthRssServiceImpl();
+        return new NgxAuthRssServiceImpl(rssReCallbackProperties());
     }
 }

@@ -39,7 +39,7 @@ public class AuthEntriesPointResponse implements AuthenticationEntryPoint {
         map.put("message", authException.getMessage());
         map.put("path", request.getServletPath());
         map.put("timestamp", new Date().getTime());
-        map.put("date_time", DateUtils.feedStageAsString(new Date()));
+        map.put("publish", DateUtils.feedStageAsString(new Date()));
 
         try {
             ObjectMapper mapper = new ObjectMapper();

@@ -80,11 +80,16 @@ public class NgxAuthRssServiceImpl implements NgxAuthRssService {
 
             http
                     .authorizeRequests()
+
+                    /* begin::OAuth2 Configuration */
                     .antMatchers(HttpMethod.GET, "/**").access("#oauth2.hasScope('read')")
                     .antMatchers(HttpMethod.POST, "/**").access("#oauth2.hasScope('write')")
                     .antMatchers(HttpMethod.PATCH, "/**").access("#oauth2.hasScope('write')")
                     .antMatchers(HttpMethod.PUT, "/**").access("#oauth2.hasScope('write')")
                     .antMatchers(HttpMethod.DELETE, "/**").access("#oauth2.hasScope('write')")
+                    /* end::OAuth2 Configuration */
+
+                    /* begin::Headers Configuration */
                     .and()
                     .headers().addHeaderWriter((request, response) -> {
                 response.addHeader(OAuth2AccessTokenVariable.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
@@ -96,6 +101,7 @@ public class NgxAuthRssServiceImpl implements NgxAuthRssService {
                             OAuth2AccessTokenVariable.ACCESS_CONTROL_ALLOW_HEADERS,
                             request.getHeader(OAuth2AccessTokenVariable.ACCESS_CONTROL_REQUEST_HEADERS));
                 }
+                /* end::Headers Configuration */
             });
 
         } else {
@@ -108,60 +114,88 @@ public class NgxAuthRssServiceImpl implements NgxAuthRssService {
                 rssProperties.setEndpointsDenied(RSSProperties.initEndpointsDenied());
             }
 
-            List<String> endpointsPermitted = rssProperties.getEndpointsPermitted()
-                    .stream()
-                    .filter(endpointsLabel -> endpointsLabel.isEnabled() && StringUtility.isNotEmpty(endpointsLabel.getEndpointShortUrl()))
-                    .map(EndpointsLabel::getEndpointShortUrl)
-                    .collect(Collectors.toList());
-
-            List<String> endpointsDenied = rssProperties.getEndpointsDenied()
-                    .stream()
-                    .filter(endpointsLabel -> endpointsLabel.isEnabled() && StringUtility.isNotEmpty(endpointsLabel.getEndpointShortUrl()))
-                    .map(EndpointsLabel::getEndpointShortUrl)
-                    .collect(Collectors.toList());
-
-            if (CollectionsUtility.isEmpty(endpointsPermitted)) {
-                endpointsPermitted = new ArrayList<>();
-                endpointsPermitted.add("/swagger-ui.html"); // default value
-            }
-
-            if (CollectionsUtility.isEmpty(endpointsDenied)) {
-                endpointsDenied = new ArrayList<>();
-                endpointsDenied.add("/api/v1/configs/**");
-            }
-
-            String[] endpointsPermittedSecurities = ExchangeUtils.exchangeListStringToStringArrayUsingArraysCopyOf(endpointsPermitted);
-            String[] endpointsDeniedSecurities = ExchangeUtils.exchangeListStringToStringArrayUsingArraysCopyOf(endpointsDenied);
-
-            if (logger.isInfoEnabled()) {
-                logger.info("ResourceServer::onConfigHttpSecurities::endpointsPermittedSecurities: {}", LoggerUtils.toJson(endpointsPermittedSecurities));
-                logger.info("ResourceServer::onConfigHttpSecurities::endpointsDeniedSecurities: {}", LoggerUtils.toJson(endpointsDeniedSecurities));
-            }
-
-            http
-                    .authorizeRequests()
-                    .antMatchers(endpointsPermittedSecurities).permitAll()
-                    .mvcMatchers(endpointsPermittedSecurities).permitAll()
-                    .antMatchers(endpointsDeniedSecurities).denyAll()
-                    .antMatchers(HttpMethod.GET, "/**").access("#oauth2.hasScope('read')")
-                    .antMatchers(HttpMethod.POST, "/**").access("#oauth2.hasScope('write')")
-                    .antMatchers(HttpMethod.PATCH, "/**").access("#oauth2.hasScope('write')")
-                    .antMatchers(HttpMethod.PUT, "/**").access("#oauth2.hasScope('write')")
-                    .antMatchers(HttpMethod.DELETE, "/**").access("#oauth2.hasScope('write')")
-                    .and()
-                    .headers().addHeaderWriter((request, response) -> {
-                response.addHeader(OAuth2AccessTokenVariable.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
-                if (request.getMethod().equals("OPTIONS")) {
-                    response.setHeader(
-                            OAuth2AccessTokenVariable.ACCESS_CONTROL_ALLOW_METHODS,
-                            request.getHeader(OAuth2AccessTokenVariable.ACCESS_CONTROL_REQUEST_METHOD));
-                    response.setHeader(
-                            OAuth2AccessTokenVariable.ACCESS_CONTROL_ALLOW_HEADERS,
-                            request.getHeader(OAuth2AccessTokenVariable.ACCESS_CONTROL_REQUEST_HEADERS));
-                }
-            });
+            onConfigHttpSecuritiesSide(rssProperties, http);
         }
 
+    }
+
+    private void onConfigHttpSecuritiesSide(RSSProperties rssProperties, HttpSecurity http) throws Exception {
+        List<String> endpointsPermitted = rssProperties.getEndpointsPermitted()
+                .stream()
+                .filter(endpointsLabel -> endpointsLabel.isEnabled() && StringUtility.isNotEmpty(endpointsLabel.getEndpointShortUrl()))
+                .map(EndpointsLabel::getEndpointShortUrl)
+                .collect(Collectors.toList());
+
+        List<String> endpointsDenied = rssProperties.getEndpointsDenied()
+                .stream()
+                .filter(endpointsLabel -> endpointsLabel.isEnabled() && StringUtility.isNotEmpty(endpointsLabel.getEndpointShortUrl()))
+                .map(EndpointsLabel::getEndpointShortUrl)
+                .collect(Collectors.toList());
+
+        if (CollectionsUtility.isEmpty(endpointsPermitted)) {
+            endpointsPermitted = new ArrayList<>();
+            endpointsPermitted.add("/swagger-ui.html");
+        }
+
+        if (CollectionsUtility.isEmpty(endpointsDenied)) {
+            endpointsDenied = new ArrayList<>();
+            endpointsDenied.add("/api/v1/configs/**");
+        }
+
+        String[] endpointsPermittedSecurities = ExchangeUtils.exchangeListStringToStringArrayUsingArraysCopyOf(endpointsPermitted);
+        String[] endpointsDeniedSecurities = ExchangeUtils.exchangeListStringToStringArrayUsingArraysCopyOf(endpointsDenied);
+
+        if (logger.isInfoEnabled()) {
+            logger.info("ResourceServer::onConfigHttpSecurities::endpointsPermittedSecurities: {}", LoggerUtils.toJson(endpointsPermittedSecurities));
+            logger.info("ResourceServer::onConfigHttpSecurities::endpointsDeniedSecurities: {}", LoggerUtils.toJson(endpointsDeniedSecurities));
+        }
+
+
+        http
+                /* begin::Session */
+                // .sessionManagement()
+                // .maximumSessions(1)
+                // .maxSessionsPreventsLogin(true)
+                // .expiredUrl(String.format("%s%s", ROUTES_API_USER, "/sign-in?invalid-session=true"))
+                // .and()
+                // .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                // .invalidSessionUrl(String.format("%s%s", ROUTES_API_USER, "/sign-in"))
+                // .and()
+                /* end::Session */
+
+                .authorizeRequests()
+                /* begin::endpointsPermittedSecurities Configuration */
+                .antMatchers(endpointsPermittedSecurities).permitAll()
+                .mvcMatchers(endpointsPermittedSecurities).permitAll()
+                /* end::endpointsPermittedSecurities Configuration */
+
+                /* begin::endpointsDeniedSecurities Configuration */
+                .antMatchers(endpointsDeniedSecurities).denyAll()
+                .mvcMatchers(endpointsDeniedSecurities).denyAll()
+                /* end::endpointsDeniedSecurities Configuration */
+
+                /* begin::OAuth2 Configuration */
+                .antMatchers(HttpMethod.GET, "/**").access("#oauth2.hasScope('read')")
+                .antMatchers(HttpMethod.POST, "/**").access("#oauth2.hasScope('write')")
+                .antMatchers(HttpMethod.PATCH, "/**").access("#oauth2.hasScope('write')")
+                .antMatchers(HttpMethod.PUT, "/**").access("#oauth2.hasScope('write')")
+                .antMatchers(HttpMethod.DELETE, "/**").access("#oauth2.hasScope('write')")
+                /* end::OAuth2 Configuration */
+
+                /* begin::Headers Configuration */
+                .and()
+                .headers().addHeaderWriter((request, response) -> {
+            response.addHeader(OAuth2AccessTokenVariable.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+            if (request.getMethod().equals("OPTIONS")) {
+                response.setHeader(
+                        OAuth2AccessTokenVariable.ACCESS_CONTROL_ALLOW_METHODS,
+                        request.getHeader(OAuth2AccessTokenVariable.ACCESS_CONTROL_REQUEST_METHOD));
+                response.setHeader(
+                        OAuth2AccessTokenVariable.ACCESS_CONTROL_ALLOW_HEADERS,
+                        request.getHeader(OAuth2AccessTokenVariable.ACCESS_CONTROL_REQUEST_HEADERS));
+            }
+            /* end::Headers Configuration */
+        });
     }
 
     @Override

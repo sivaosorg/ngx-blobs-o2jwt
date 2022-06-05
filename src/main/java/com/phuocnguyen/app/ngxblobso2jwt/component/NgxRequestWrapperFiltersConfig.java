@@ -69,7 +69,7 @@ public class NgxRequestWrapperFiltersConfig extends OncePerRequestFilter {
         wrappedRequest.addHeader("new_header", "x_cr_sf_");
 
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                build(user),
+                authentication.getPrincipal(),
                 authentication.getCredentials(),
                 authentication.getAuthorities());
 

@@ -5,6 +5,7 @@ import com.ngxsivaos.model.properties.RSSProperties;
 import com.ngxsivaos.model.properties.RSSReCallbackProperties;
 import com.phuocnguyen.app.ngxblobso2jwt.model.indicator.ReCallbackResourceServerIndicator;
 import com.phuocnguyen.app.ngxblobso2jwt.service.NgxAuthRssService;
+import com.sivaos.Utility.StringUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +69,11 @@ public class NgxMetaResourcesServerConfig extends ResourceServerConfigurerAdapte
 
     @Bean
     public JwtAccessTokenConverter accessTokenConverter() {
+
+        if (StringUtility.isNotEmpty(rssProperties.getJwtKey())) {
+            return EventListenerConfig.accessTokenConverter(rssProperties.getJwtKey());
+        }
+
         return EventListenerConfig.accessTokenConverter();
     }
 

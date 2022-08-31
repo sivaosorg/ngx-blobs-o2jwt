@@ -38,14 +38,12 @@ apply plugin: 'eclipse'
 /* begin::Define output built */
 /* begin::Jar */
 jar {
-    // archiveFileName = "${fileArchived}" + ".jar"
     version("${ngxBlobsO2jwtVersion}")
 }
 /* end::Jar */
 
 /* begin::War */
 war {
-    // archiveFileName = "${fileArchived}" + ".war"
     version("${ngxBlobsO2jwtVersion}")
 }
 /* end::War */
@@ -55,7 +53,7 @@ war {
 dependencies {
     /* begin::Support testing */
     testCompile('org.springframework.boot:spring-boot-starter-test')
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation 'org.junit.jupiter:junit-jupiter-api:5.5.1'
     testCompile group: 'org.springframework', name: 'spring-mock', version: '2.0.8'
     /* end::Support testing */
 
@@ -78,7 +76,7 @@ dependencies {
 
     /* begin::Support Make Request */
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.12'
-    implementation group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'
+    implementation group: 'com.konghq', name: 'unirest-java', version: '3.13.10'
     /* end::Support Make Request */
 
 
@@ -88,9 +86,6 @@ dependencies {
 
 
     /* begin::Support Database */
-    /* compile('org.springframework.boot:spring-boot-starter-data-mongodb') */
-    /* compile group: 'org.postgresql', name: 'postgresql', version: '9.4-1206-jdbc42' */
-    /* compile "org.flywaydb:flyway-core:7.4.0" */
     compile group: 'com.google.firebase', name: 'firebase-admin', version: '6.9.0'
     compile group: 'com.firebase', name: 'firebase-token-generator', version: '2.0.0'
     compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.18'
@@ -178,8 +173,6 @@ dependencies {
     /* begin::Support SMS */
     implementation group: 'com.plivo', name: 'plivo-java', version: '5.3.1'
     runtime group: 'com.twilio.sdk', name: 'twilio', version: '7.11.0'
-    // runtimeOnly group: 'com.twilio.sdk', name: 'twilio', version: '8.19.2'
-    // runtimeOnly 'com.twilio.sdk:twilio:8.19.2'
     /* begin::Support SMS */
 
     /*

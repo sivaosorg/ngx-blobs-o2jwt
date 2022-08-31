@@ -4,6 +4,7 @@ import com.ngxsivaos.converter.NgxAccessTokenConverter;
 import com.ngxsivaos.model.label.EndpointsLabel;
 import com.ngxsivaos.model.properties.RSSProperties;
 import com.ngxsivaos.model.properties.RSSReCallbackProperties;
+import com.ngxsivaos.utils.MatcherUtils;
 import com.phuocnguyen.app.ngxblobso2jwt.model.builder.NgxTokenExtractor;
 import com.phuocnguyen.app.ngxblobso2jwt.model.response.AccessDeniedHandlerResponse;
 import com.phuocnguyen.app.ngxblobso2jwt.model.response.AuthEntriesPointResponse;
@@ -126,10 +127,22 @@ public class NgxAuthRssServiceImpl implements NgxAuthRssService {
                 .map(EndpointsLabel::getEndpointShortUrl)
                 .collect(Collectors.toList());
 
+        List<String> endpointsRegexPermitted = rssProperties.getEndpointsPermitted()
+                .stream()
+                .filter(endpointsLabel -> endpointsLabel.isEnabled() && StringUtility.isNotEmpty(endpointsLabel.getEndpointRegex()))
+                .map(EndpointsLabel::getEndpointRegex)
+                .collect(Collectors.toList());
+
         List<String> endpointsDenied = rssProperties.getEndpointsDenied()
                 .stream()
                 .filter(endpointsLabel -> endpointsLabel.isEnabled() && StringUtility.isNotEmpty(endpointsLabel.getEndpointShortUrl()))
                 .map(EndpointsLabel::getEndpointShortUrl)
+                .collect(Collectors.toList());
+
+        List<String> endpointsRegexDenied = rssProperties.getEndpointsDenied()
+                .stream()
+                .filter(endpointsLabel -> endpointsLabel.isEnabled() && StringUtility.isNotEmpty(endpointsLabel.getEndpointRegex()))
+                .map(EndpointsLabel::getEndpointRegex)
                 .collect(Collectors.toList());
 
         if (CollectionsUtility.isEmpty(endpointsPermitted)) {
@@ -143,13 +156,14 @@ public class NgxAuthRssServiceImpl implements NgxAuthRssService {
         }
 
         String[] endpointsPermittedSecurities = ExchangeUtils.exchangeListStringToStringArrayUsingArraysCopyOf(endpointsPermitted);
+        String[] endpointsRegexPermittedSecurities = ExchangeUtils.exchangeListStringToStringArrayUsingArraysCopyOf(endpointsRegexPermitted);
         String[] endpointsDeniedSecurities = ExchangeUtils.exchangeListStringToStringArrayUsingArraysCopyOf(endpointsDenied);
+        String[] endpointsRegexDeniedSecurities = ExchangeUtils.exchangeListStringToStringArrayUsingArraysCopyOf(endpointsRegexDenied);
 
         if (logger.isInfoEnabled()) {
             logger.info("ResourceServer::onConfigHttpSecurities::endpointsPermittedSecurities: {}", LoggerUtils.toJson(endpointsPermittedSecurities));
             logger.info("ResourceServer::onConfigHttpSecurities::endpointsDeniedSecurities: {}", LoggerUtils.toJson(endpointsDeniedSecurities));
         }
-
 
         http
                 /* begin::Session */
@@ -165,13 +179,15 @@ public class NgxAuthRssServiceImpl implements NgxAuthRssService {
 
                 .authorizeRequests()
                 /* begin::endpointsPermittedSecurities Configuration */
-                .antMatchers(endpointsPermittedSecurities).permitAll()
-                .mvcMatchers(endpointsPermittedSecurities).permitAll()
+                .requestMatchers(MatcherUtils.matchAntPaths(endpointsPermittedSecurities)).permitAll()
+                .regexMatchers(endpointsRegexPermittedSecurities).permitAll()
+                // .mvcMatchers(endpointsPermittedSecurities).permitAll()
                 /* end::endpointsPermittedSecurities Configuration */
 
                 /* begin::endpointsDeniedSecurities Configuration */
-                .antMatchers(endpointsDeniedSecurities).denyAll()
-                .mvcMatchers(endpointsDeniedSecurities).denyAll()
+                .requestMatchers(MatcherUtils.matchAntPaths(endpointsDeniedSecurities)).denyAll()
+                .regexMatchers(endpointsRegexDeniedSecurities).denyAll()
+                // .mvcMatchers(endpointsDeniedSecurities).denyAll()
                 /* end::endpointsDeniedSecurities Configuration */
 
                 /* begin::OAuth2 Configuration */

@@ -1,5 +1,6 @@
 package com.phuocnguyen.app.ngxblobso2jwt.model.builder;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
@@ -13,11 +14,9 @@ import java.util.Enumeration;
 @Service
 public class NgxTokenExtractor implements TokenExtractor {
 
-    private static final String AUTHORIZATION = "Authorization";
-
     @Override
     public Authentication extract(HttpServletRequest request) {
-        Enumeration<String> headers = request.getHeaders(AUTHORIZATION);
+        Enumeration<String> headers = request.getHeaders(HttpHeaders.AUTHORIZATION);
         while (headers.hasMoreElements()) {
 
             String value = headers.nextElement();

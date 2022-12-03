@@ -3,7 +3,9 @@ package com.phuocnguyen.app.ngxblobso2jwt.config;
 import com.ngxsivaos.model.properties.RSSProperties;
 import com.ngxsivaos.model.properties.RSSReCallbackProperties;
 import com.phuocnguyen.app.ngxblobso2jwt.service.NgxAuthRssService;
+import com.phuocnguyen.app.ngxblobso2jwt.service.NgxCorsService;
 import com.phuocnguyen.app.ngxblobso2jwt.service.serviceImpl.NgxAuthRssServiceImpl;
+import com.phuocnguyen.app.ngxblobso2jwt.service.serviceImpl.NgxCorsServiceImpl;
 import com.sivaos.Service.SIVAOSAuthenticationService;
 import com.sivaos.Service.SIVAOSServiceImplement.SIVAOSAuthenticationServiceImplement;
 import org.springframework.context.annotation.Bean;
@@ -12,9 +14,11 @@ import org.springframework.context.annotation.Primary;
 
 import javax.annotation.Resource;
 
-@SuppressWarnings("All")
+@SuppressWarnings({
+        "SpringFacetCodeInspection"
+})
 @Configuration
-public class ServicesO2JwtGlobalConfig {
+public class ServicesResourceJwtConfig {
 
     @Bean
     @Primary
@@ -39,5 +43,12 @@ public class ServicesO2JwtGlobalConfig {
     @Resource(name = "ngxAuthRssService")
     public NgxAuthRssService ngxAuthRssService() {
         return new NgxAuthRssServiceImpl(rssReCallbackProperties());
+    }
+
+    @Bean
+    @Primary
+    @Resource(name = "ngxCorsService")
+    public NgxCorsService ngxCorsService() {
+        return new NgxCorsServiceImpl();
     }
 }

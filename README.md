@@ -72,7 +72,7 @@ spring:
     enabled: false # enable check token from OAuth2.0, default is false
 ```
 
-:package: checkout file `application-dev.yml`, `application-local.yml`, `application-prod.yml`
+:package: checkout file [`application-dev.yml`](src/main/resources/application-dev.yml), [`application-local.yml`](src/main/resources/application-dev.yml), [`application-prod.yml`](src/main/resources/application-dev.yml)
 
 ```yml
 # ////////////////////////////

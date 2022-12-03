@@ -1,0 +1,7 @@
+# ////////////////////////////
+# Config Resource Attributes
+# ////////////////////////////
+---
+spring:
+  resource-server-callback-starter:
+    enabled: false # enable check token from OAuth2.0, default is false

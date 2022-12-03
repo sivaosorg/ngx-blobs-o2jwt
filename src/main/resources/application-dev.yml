@@ -1,0 +1,7 @@
+# ////////////////////////////
+# Config Resource Attributes
+# ////////////////////////////
+---
+spring:
+  resource-server-callback-starter:
+    host-auth: http://localhost:8083 # host OAuth2.0

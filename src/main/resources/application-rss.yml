@@ -1,0 +1,31 @@
+spring:
+  resource-server-starter:
+    enabled: true # enable resources server, default is true
+    resource-id: product-api # set resources_id
+    jwt-key: '' # set key to encode token, default is empty (using key system)
+    endpoints-permitted:
+      - enabled: true
+        endpoint-short-url: '/swagger-ui.html'
+        endpoint-regex: ''
+        endpoint-description: API list all endpoints via swagger
+      - enabled: true
+        endpoint-short-url: '/publish/event/**'
+        endpoint-regex: ''
+        endpoint-description: Uri websocket to publish event
+      - enabled: false
+        endpoint-short-url: '/api/v1/users/redis/heartbeat/123?value=1&value1=2'
+        endpoint-regex: '/api/v1/users/redis/heartbeat/123{1}.*'
+        endpoint-description: Uri routes API endpoint staging
+    endpoints-denied:
+      - enabled: true
+        endpoint-short-url: '/api/v1/admin/**'
+        endpoint-regex: ''
+        endpoint-description: API admin
+      - enabled: false
+        endpoint-short-url: '/api/v1/configs/**'
+        endpoint-regex: ''
+        endpoint-description: API configs system
+      - enabled: false
+        endpoint-short-url: '/api/v1/redis-props/keys'
+        endpoint-regex: ''
+        endpoint-description: API redis props

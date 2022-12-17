@@ -70,6 +70,35 @@ spring:
 spring:
   resource-server-callback-starter:
     enabled: false # enable check token from OAuth2.0, default is false
+
+# ////////////////////////////
+# Config Application Attributes
+# ////////////////////////////
+---
+spring:
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Ho_Chi_Minh
+
+# ////////////////////////////
+# Config Cors Attributes
+# ////////////////////////////
+---
+spring:
+  cors-starter:
+    enabled: false
+    allow-credentials: true
+    max-age-in-seconds: 1800
+    allowed-origins:
+      - * # default is any origins
+    allowed-headers: # default (*) is any headers
+      - Authorization
+      - Requestor-Type
+    allowed-methods:
+      - * # default is any methods (GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS, TRACE)
+    exposed-headers: # not allowed for *
+      - X-Get-Header
+      - Access-Control-Expose-Headers
 ```
 
 :package: checkout file [`application-dev.yml`](src/main/resources/application-dev.yml), [`application-local.yml`](src/main/resources/application-dev.yml), [`application-prod.yml`](src/main/resources/application-dev.yml)

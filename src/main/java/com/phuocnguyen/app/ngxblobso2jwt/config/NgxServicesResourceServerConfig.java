@@ -1,5 +1,6 @@
 package com.phuocnguyen.app.ngxblobso2jwt.config;
 
+import com.ngxsivaos.model.properties.CorsProperties;
 import com.ngxsivaos.model.properties.RSSProperties;
 import com.ngxsivaos.model.properties.RSSReCallbackProperties;
 import com.phuocnguyen.app.ngxblobso2jwt.service.NgxAuthRssService;
@@ -18,7 +19,7 @@ import javax.annotation.Resource;
         "SpringFacetCodeInspection"
 })
 @Configuration
-public class ServicesResourceJwtConfig {
+public class NgxServicesResourceServerConfig {
 
     @Bean
     @Primary
@@ -30,6 +31,12 @@ public class ServicesResourceJwtConfig {
     @Primary
     public RSSReCallbackProperties rssReCallbackProperties() {
         return new RSSReCallbackProperties();
+    }
+
+    @Bean
+    @Primary
+    public CorsProperties corsProperties() {
+        return new CorsProperties();
     }
 
     @Bean

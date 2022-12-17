@@ -1,29 +1,41 @@
 package com.phuocnguyen.app.ngxblobso2jwt.service.serviceImpl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ngxsivaos.model.properties.CorsProperties;
 import com.ngxsivaos.model.request.StatelessCookieRequest;
+import com.ngxsivaos.utilities.JsonUtility;
 import com.ngxsivaos.utils.original.KLogs;
 import com.phuocnguyen.app.ngxblobso2jwt.service.NgxCorsService;
 import com.sivaos.Configurer.CustomFilterRequest.Model.HttpServletFilter;
+import com.sivaos.Utility.CollectionsUtility;
 import com.sivaos.Utility.StringUtility;
 import com.sivaos.Utils.ClassesUtils;
 import com.sivaos.Utils.ExchangeUtils;
 import com.sivaos.Utils.ObjectUtils;
 import com.sivaos.Utils.ValidationUtils;
+import com.sivaos.Variables.PatternEpochVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
 import static com.phuocnguyen.app.ngxblobso2jwt.service.serviceImpl.NgxCorsServiceImpl.CorsAttributes.*;
+import static com.phuocnguyen.app.ngxblobso2jwt.variable.Var.TIMEZONE_DEFAULT;
 
 @SuppressWarnings({
         "FieldCanBeLocal",
@@ -181,6 +193,57 @@ public class NgxCorsServiceImpl implements NgxCorsService {
             }
         }
 
+    }
+
+    @Override
+    public ObjectMapper getMapper(JacksonProperties jacksonProperties, CorsProperties corsProperties) {
+        ObjectMapper instance = new ObjectMapper();
+        DateFormat formatter = new SimpleDateFormat(PatternEpochVariable.BIBLIOGRAPHY_EPOCH_PATTERN);
+
+        if (StringUtility.isNotEmpty(jacksonProperties.getDateFormat())) {
+            formatter = new SimpleDateFormat(jacksonProperties.getDateFormat());
+        }
+
+        if (ObjectUtils.allNotNull(jacksonProperties.getTimeZone())) {
+            formatter.setTimeZone(jacksonProperties.getTimeZone());
+        } else {
+            formatter.setTimeZone(TimeZone.getTimeZone(TIMEZONE_DEFAULT));
+        }
+
+        instance.setDateFormat(formatter);
+
+        return instance;
+    }
+
+    @Override
+    public CorsConfigurationSource createCors(JacksonProperties jacksonProperties, CorsProperties corsProperties) {
+        UrlBasedCorsConfigurationSource config = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration cors = new CorsConfiguration();
+
+        cors.setAllowCredentials(corsProperties.isAllowCredentials());
+        cors.setAllowedOrigins(corsProperties.getAllowedOrigins());
+        cors.setAllowedHeaders(corsProperties.getAllowedHeaders());
+        cors.setAllowedMethods(corsProperties.getAllowedMethods());
+
+        if (corsProperties.getMaxAgeInSeconds() > -1) {
+            cors.setMaxAge(corsProperties.getMaxAgeInSeconds());
+        }
+
+        if (CollectionsUtility.isNotEmpty(corsProperties.getExposedHeaders())) {
+            if (!corsProperties.getExposedHeaders().contains(CorsConfiguration.ALL)) {
+                cors.setExposedHeaders(corsProperties.getExposedHeaders());
+            } else {
+                throw new IllegalArgumentException("CORS: '*' is not a valid exposed header value");
+            }
+        }
+
+        config.registerCorsConfiguration("/**", cors);
+
+        if (logger.isInfoEnabled()) {
+            logger.info("Cors properties = {}", JsonUtility.toJson(corsProperties));
+        }
+
+        return config;
     }
 
     private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) {
